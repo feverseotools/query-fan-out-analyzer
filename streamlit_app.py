@@ -38,9 +38,38 @@ def main():
         st.session_state.analysis_history = []
         st.session_state.current_query = ""
         st.session_state.predictions = []
+        st.session_state.api_provider = None
+        st.session_state.api_key = None
     
-    # Sidebar navigation
+    # Sidebar navigation and configuration
     st.sidebar.title("🔍 QFAP Navigation")
+    st.sidebar.markdown("---")
+    
+    # API Configuration in sidebar
+    st.sidebar.subheader("⚙️ API Configuration")
+    
+    # API Key input
+    api_provider = st.sidebar.selectbox(
+        "Select AI Provider:",
+        ["OpenAI", "Anthropic"],
+        help="Choose your preferred AI provider for query analysis"
+    )
+    
+    api_key = st.sidebar.text_input(
+        f"{api_provider} API Key:",
+        type="password",
+        placeholder="Enter your API key here",
+        help=f"Your {api_provider} API key for generating predictions"
+    )
+    
+    # Store API configuration in session state
+    if api_key:
+        st.session_state.api_provider = api_provider
+        st.session_state.api_key = api_key
+        st.sidebar.success("✅ API Key configured!")
+    else:
+        st.sidebar.warning("⚠️ API Key required for AI predictions")
+    
     st.sidebar.markdown("---")
     
     # Main content area
@@ -64,24 +93,40 @@ def main():
                 help="Enter the primary query you want to analyze for fan-out predictions"
             )
             
-            if st.button("Analyze Query", type="primary", disabled=not query):
-                with st.spinner("Analyzing query and predicting fan-out..."):
-                    # Placeholder for actual analysis
-                    st.session_state.current_query = query
-                    st.session_state.predictions = [
-                        {"sub_query": f"{query} reviews", "probability": 0.87, "facet": "Reviews"},
-                        {"sub_query": f"{query} comparison", "probability": 0.76, "facet": "Comparison"},
-                        {"sub_query": f"{query} price", "probability": 0.71, "facet": "Price"},
-                        {"sub_query": f"best {query.split()[-1]} brands", "probability": 0.68, "facet": "Brands"}
-                    ]
-                    st.success("Analysis completed!")
-                    st.rerun()
+            # Analyze button with API key validation
+            analyze_disabled = not query or not st.session_state.get('api_key')
+            button_help = "Enter a query and configure API key to analyze" if analyze_disabled else "Click to analyze your query"
+            
+            if st.button("Analyze Query", type="primary", disabled=analyze_disabled, help=button_help):
+                if not st.session_state.get('api_key'):
+                    st.error("⚠️ Please configure your API key in the sidebar first!")
+                else:
+                    with st.spinner("Analyzing query and predicting fan-out..."):
+                        # Placeholder for actual AI analysis
+                        # TODO: Replace with real AI integration
+                        st.session_state.current_query = query
+                        st.session_state.predictions = [
+                            {"sub_query": f"{query} reviews", "probability": 0.87, "facet": "Reviews"},
+                            {"sub_query": f"{query} comparison", "probability": 0.76, "facet": "Comparison"},
+                            {"sub_query": f"{query} price", "probability": 0.71, "facet": "Price"},
+                            {"sub_query": f"best {query.split()[-1]} brands", "probability": 0.68, "facet": "Brands"}
+                        ]
+                        st.success("✅ Analysis completed!")
+                        st.rerun()
         
         with col2:
             st.header("📊 Quick Stats")
+            if st.session_state.get('api_key'):
+                api_status = f"✅ {st.session_state.get('api_provider', 'Unknown')} Connected"
+            else:
+                api_status = "⚠️ API Not Configured"
+            
+            st.metric("API Status", api_status)
+            
             if st.session_state.predictions:
                 st.metric("Sub-queries Found", len(st.session_state.predictions))
-                st.metric("Avg. Probability", f"{sum(p['probability'] for p in st.session_state.predictions) / len(st.session_state.predictions):.2f}")
+                avg_prob = sum(p['probability'] for p in st.session_state.predictions) / len(st.session_state.predictions)
+                st.metric("Avg. Probability", f"{avg_prob:.0%}")
                 st.metric("Coverage Score", "73%")
     
     # Results section
