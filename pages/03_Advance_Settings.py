@@ -26,7 +26,6 @@ def load_default_settings():
             "temperature": 0.7,
             "max_predictions": 8,
             "openai_model": "gpt-4",
-            "anthropic_model": "claude-3-sonnet-20240229",
             "fallback_enabled": True
         },
         "analysis_settings": {
@@ -161,20 +160,6 @@ def main():
             openai_models,
             index=openai_models.index(settings["ai_settings"]["openai_model"]),
             help="Choose the OpenAI model for generating predictions"
-        )
-        
-        # Anthropic Model Selection
-        anthropic_models = [
-            "claude-3-sonnet-20240229",
-            "claude-3-opus-20240229",
-            "claude-3-haiku-20240307"
-        ]
-        
-        settings["ai_settings"]["anthropic_model"] = st.selectbox(
-            "Anthropic Model:",
-            anthropic_models,
-            index=anthropic_models.index(settings["ai_settings"]["anthropic_model"]),
-            help="Choose the Anthropic model for generating predictions"
         )
     
     with col2:
@@ -441,7 +426,6 @@ def main():
             st.write(f"**Temperature:** {settings['ai_settings']['temperature']}")
             st.write(f"**Max Predictions:** {settings['ai_settings']['max_predictions']}")
             st.write(f"**OpenAI Model:** {settings['ai_settings']['openai_model']}")
-            st.write(f"**Anthropic Model:** {settings['ai_settings']['anthropic_model']}")
             st.write(f"**Fallback Enabled:** {settings['ai_settings']['fallback_enabled']}")
             
             st.subheader("Analysis Settings")
