@@ -156,12 +156,16 @@ def main():
             st.header("🚀 Quick Analysis")
             
             # Query input with sample queries
+            placeholder_text = "e.g., best smartphones 2024"  # Default placeholder
             if st.session_state.ml_manager:
-                # Get sample queries for selected analysis language
-                sample_queries = st.session_state.ml_manager.get_sample_queries(st.session_state.language)
-                placeholder_text = sample_queries[0] if sample_queries else "e.g., best smartphones 2024"
-            else:
-                placeholder_text = "e.g., best smartphones 2024"
+                try:
+                    # Get sample queries for selected analysis language
+                    sample_queries = st.session_state.ml_manager.get_sample_queries(st.session_state.language)
+                    if sample_queries:
+                        placeholder_text = sample_queries[0]
+                except Exception as e:
+                    print(f"Error getting sample queries: {e}")
+                    # Keep default placeholder
             
             query = st.text_input(
                 "Enter your main query:",
@@ -170,14 +174,20 @@ def main():
             )
             
             # Show sample queries for current analysis language
-            if st.session_state.ml_manager and st.session_state.language in languages:
-                current_lang = languages[st.session_state.language]
-                with st.expander(f"💡 Sample Queries ({current_lang.name})", expanded=False):
-                    sample_queries = st.session_state.ml_manager.get_sample_queries(st.session_state.language)
-                    for i, sample in enumerate(sample_queries[:5]):
-                        if st.button(f"📝 {sample}", key=f"sample_{i}"):
-                            st.session_state.temp_query = sample
-                            st.rerun()
+            if st.session_state.ml_manager:
+                try:
+                    languages = st.session_state.ml_manager.get_available_languages()
+                    if st.session_state.language in languages:
+                        current_lang = languages[st.session_state.language]
+                        with st.expander(f"💡 Sample Queries ({current_lang.name})", expanded=False):
+                            sample_queries = st.session_state.ml_manager.get_sample_queries(st.session_state.language)
+                            for i, sample in enumerate(sample_queries[:5]):
+                                if st.button(f"📝 {sample}", key=f"sample_{i}"):
+                                    st.session_state.temp_query = sample
+                                    st.rerun()
+                except Exception as e:
+                    print(f"Error displaying sample queries: {e}")
+                    # Continue without sample queries
             
             # Use sample query if selected
             if hasattr(st.session_state, 'temp_query'):
@@ -194,8 +204,13 @@ def main():
                 else:
                     # Get current language name for spinner message
                     current_lang_name = "English"
-                    if st.session_state.language in languages:
-                        current_lang_name = languages[st.session_state.language].name
+                    if st.session_state.ml_manager:
+                        try:
+                            languages = st.session_state.ml_manager.get_available_languages()
+                            if st.session_state.language in languages:
+                                current_lang_name = languages[st.session_state.language].name
+                        except Exception:
+                            current_lang_name = "English"
                     
                     with st.spinner(f"Analyzing query in {current_lang_name} and predicting fan-out..."):
                         st.session_state.current_query = query
@@ -268,10 +283,16 @@ def main():
             # Show current analysis language
             current_lang_name = "English"
             current_lang_flag = "🇺🇸"
-            if st.session_state.language in languages:
-                current_lang = languages[st.session_state.language]
-                current_lang_name = current_lang.name
-                current_lang_flag = current_lang.flag
+            if st.session_state.ml_manager:
+                try:
+                    languages = st.session_state.ml_manager.get_available_languages()
+                    if st.session_state.language in languages:
+                        current_lang = languages[st.session_state.language]
+                        current_lang_name = current_lang.name
+                        current_lang_flag = current_lang.flag
+                except Exception as e:
+                    print(f"Error getting language info: {e}")
+                    # Keep defaults
                 
             st.metric("Analysis Language", f"{current_lang_flag} {current_lang_name}")
             
