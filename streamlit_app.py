@@ -318,6 +318,91 @@ def show_settings_page():
 
 # Custom CSS
 def load_css():
+    # Custom CSS and JavaScript to hide navigation elements
+    st.markdown("""
+    <style>
+    /* Hide the navigation sidebar completely */
+    .css-1d391kg {
+        display: none !important;
+    }
+    
+    /* Hide the top navigation bar */
+    .css-14xtw13.e8zbici0 {
+        display: none !important;
+    }
+    
+    /* Hide the streamlit header */
+    header[data-testid="stHeader"] {
+        display: none !important;
+    }
+    
+    /* Hide the page navigation */
+    .css-1rs6os.edgvbvh3 {
+        display: none !important;
+    }
+    
+    /* Hide page selector in sidebar */
+    [data-testid="stSidebar"] > div:first-child {
+        display: none !important;
+    }
+    
+    /* Hide default navigation elements */
+    .css-1lcbmhc.e1fqkh3o0 {
+        display: none !important;
+    }
+    
+    /* Hide the main navigation container */
+    section[data-testid="stSidebar"] > div > div:first-child {
+        display: none !important;
+    }
+    
+    /* More aggressive hiding of navigation */
+    .css-1y4p8pa, .css-12oz5g7, .css-1rs6os {
+        display: none !important;
+    }
+    
+    /* Hide any selectbox that might be navigation */
+    .stSelectbox:first-child {
+        display: none !important;
+    }
+    </style>
+    
+    <script>
+    // JavaScript to hide navigation elements
+    setTimeout(function() {
+        // Hide elements by various selectors
+        var elementsToHide = [
+            '[data-testid="stSidebar"] > div > div:first-child',
+            '.css-1d391kg',
+            '.css-1y4p8pa',
+            'section[data-testid="stSidebar"] nav',
+            '[role="navigation"]'
+        ];
+        
+        elementsToHide.forEach(function(selector) {
+            var elements = document.querySelectorAll(selector);
+            elements.forEach(function(element) {
+                if (element) {
+                    element.style.display = 'none';
+                    element.remove();
+                }
+            });
+        });
+    }, 1000);
+    
+    // Continuous monitoring to hide navigation
+    setInterval(function() {
+        var navElements = document.querySelectorAll('[data-testid="stSidebar"] > div > div:first-child');
+        navElements.forEach(function(element) {
+            if (element && element.textContent.includes('streamlit app')) {
+                element.style.display = 'none';
+            }
+        });
+    }, 500);
+    </script>
+    """, unsafe_allow_html=True)
+    
+    # Load additional CSS file if it exists
     css_file = Path(__file__).parent / "assets" / "css" / "style.css"
     if css_file.exists():
         with open(css_file) as f:
