@@ -347,8 +347,8 @@ def main():
     # Remove translation function - UI always in English
     # Language selection only affects analysis, not UI
     
-    # Sidebar navigation and configuration
-    st.sidebar.title("🔍 QFAP Navigation")
+    # Sidebar navigation - simplified
+    st.sidebar.title("🔍 QFAP")
     st.sidebar.markdown("---")
     
     # Settings Link
@@ -436,6 +436,22 @@ def main():
         st.sidebar.success("✅ API Key configured!")
     else:
         st.sidebar.warning("⚠️ API Key required for AI predictions")
+    
+    st.sidebar.markdown("---")
+    
+    # Settings Link - Single button
+    st.sidebar.subheader("🔧 Configuration")
+    if st.sidebar.button("⚙️ Advanced Settings", use_container_width=True):
+        st.session_state.show_settings = True
+        st.rerun()
+    
+    # Show current key settings summary
+    if 'user_settings' in st.session_state:
+        ai_settings = st.session_state.user_settings.get("ai_settings", {})
+        with st.sidebar.expander("📋 Current Settings", expanded=False):
+            st.write(f"**Temperature:** {ai_settings.get('temperature', 0.7)}")
+            st.write(f"**Max Predictions:** {ai_settings.get('max_predictions', 8)}")
+            st.write(f"**Model:** {ai_settings.get('openai_model', 'gpt-4')}")
     
     st.sidebar.markdown("---")
     
