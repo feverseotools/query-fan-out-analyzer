@@ -1,10 +1,9 @@
 """
-AI Client for Real API Integration
-Supports OpenAI and Anthropic APIs with multilingual capabilities
+AI Client for OpenAI Integration
+Supports OpenAI GPT models with multilingual capabilities
 """
 
 import openai
-import anthropic
 from typing import List, Dict, Optional
 import json
 import time
@@ -20,24 +19,21 @@ class AIResponse:
 class MultilingualAIClient:
     
     def __init__(self, provider: str, api_key: str, language: str = "en", settings: dict = None):
-        self.provider = provider.lower()
+        # Only support OpenAI now
+        if provider.lower() != "openai":
+            raise ValueError("Only OpenAI provider is supported")
+            
+        self.provider = "openai"
         self.api_key = api_key
         self.language = language
         self.settings = settings or {}
-        self.client = None
         
         # Get AI settings from user configuration
         ai_settings = self.settings.get("ai_settings", {})
         
-        # Initialize client based on provider
-        if self.provider == "openai":
-            self.client = openai.OpenAI(api_key=api_key)
-            self.model = ai_settings.get("openai_model", "gpt-4")
-        elif self.provider == "anthropic":
-            self.client = anthropic.Anthropic(api_key=api_key)
-            self.model = ai_settings.get("anthropic_model", "claude-3-sonnet-20240229")
-        else:
-            raise ValueError(f"Unsupported provider: {provider}")
+        # Initialize OpenAI client
+        self.client = openai.OpenAI(api_key=api_key)
+        self.model = ai_settings.get("openai_model", "gpt-4")
         
         # Set generation parameters
         self.temperature = ai_settings.get("temperature", 0.7)
@@ -52,10 +48,8 @@ class MultilingualAIClient:
             # Create language-specific prompt
             prompt = self._create_multilingual_prompt(query, query_analysis)
             
-            if self.provider == "openai":
-                response = self._call_openai(prompt)
-            else:  # anthropic
-                response = self._call_anthropic(prompt)
+            # Call OpenAI API
+            response = self._call_openai(prompt)
             
             # Parse response
             parsed_predictions = self._parse_ai_response(response, query)
@@ -64,7 +58,7 @@ class MultilingualAIClient:
             
             return AIResponse(
                 predictions=parsed_predictions,
-                reasoning=f"Generated using {self.provider} API in {self.language}",
+                reasoning=f"Generated using OpenAI API in {self.language}",
                 confidence=0.85,
                 processing_time=processing_time
             )
@@ -166,21 +160,6 @@ Important: Generate sub-queries in {self.language} language that are natural and
             return response.choices[0].message.content
         except Exception as e:
             raise Exception(f"OpenAI API error: {str(e)}")
-    
-    def _call_anthropic(self, prompt: str) -> str:
-        """Call Anthropic API"""
-        try:
-            response = self.client.messages.create(
-                model=self.model,
-                max_tokens=2000,
-                temperature=self.temperature,
-                messages=[
-                    {"role": "user", "content": prompt}
-                ]
-            )
-            return response.content[0].text
-        except Exception as e:
-            raise Exception(f"Anthropic API error: {str(e)}")
     
     def _parse_ai_response(self, response: str, original_query: str) -> List[Dict]:
         """Parse AI response and extract predictions"""
@@ -291,24 +270,16 @@ Important: Generate sub-queries in {self.language} language that are natural and
         return predictions
 
     def test_connection(self) -> bool:
-        """Test API connection"""
+        """Test OpenAI API connection"""
         try:
             test_prompt = "Hello, this is a connection test. Please respond with 'OK'."
             
-            if self.provider == "openai":
-                response = self.client.chat.completions.create(
-                    model="gpt-3.5-turbo",  # Use cheaper model for testing
-                    messages=[{"role": "user", "content": test_prompt}],
-                    max_tokens=10
-                )
-                return "ok" in response.choices[0].message.content.lower()
-            else:  # anthropic
-                response = self.client.messages.create(
-                    model="claude-3-haiku-20240307",  # Use cheaper model for testing
-                    max_tokens=10,
-                    messages=[{"role": "user", "content": test_prompt}]
-                )
-                return "ok" in response.content[0].text.lower()
+            response = self.client.chat.completions.create(
+                model="gpt-3.5-turbo",  # Use cheaper model for testing
+                messages=[{"role": "user", "content": test_prompt}],
+                max_tokens=10
+            )
+            return "ok" in response.choices[0].message.content.lower()
                 
         except Exception:
             return False
