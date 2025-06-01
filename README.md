@@ -10,11 +10,13 @@ QFAP is a tool designed for SEOs, Content Strategists, and Digital Marketers who
 
 ### Key Features
 
-- **🔮 Predictive Analysis**: Forecast sub-queries with high accuracy
+- **🔮 AI-Powered Predictions**: Real-time fan-out analysis using OpenAI or Anthropic APIs
+- **🌍 Multilingual Support**: Full interface and analysis in English, Spanish, French, German, and Italian
 - **📊 Visual Insights**: Interactive charts and data visualization  
 - **⚡ Real-time Processing**: Instant analysis and results
 - **📁 Export Options**: Download results in CSV format
 - **🎨 User-friendly Interface**: Clean, intuitive Streamlit interface
+- **🧠 Advanced Analysis**: Intent classification, entity extraction, and commercial scoring
 
 ## 🚀 Quick Start
 
@@ -52,13 +54,21 @@ The app allows you to configure API keys directly in the interface:
 
 1. **Open the application**
 2. **Navigate to the sidebar**  
-3. **Select AI Provider**: Choose between OpenAI or Anthropic
-4. **Enter API Key**: Input your API key in the secure field
-5. **Start Analyzing**: The app will use your configured provider
+3. **Select Language**: Choose your preferred language (EN, ES, FR, DE, IT)
+4. **Select AI Provider**: Choose between OpenAI or Anthropic
+5. **Enter API Key**: Input your API key in the secure field
+6. **Start Analyzing**: The app will use your configured provider in your selected language
 
 **Supported Providers**:
-- **OpenAI**: GPT models for query analysis
-- **Anthropic**: Claude models for predictions
+- **OpenAI**: GPT-4 models for advanced query analysis
+- **Anthropic**: Claude-3 models for sophisticated predictions
+
+**Supported Languages**:
+- 🇺🇸 **English** - Full interface and analysis
+- 🇪🇸 **Español** - Complete Spanish localization  
+- 🇫🇷 **Français** - Full French interface
+- 🇩🇪 **Deutsch** - Complete German localization
+- 🇮🇹 **Italiano** - Full Italian interface
 
 ### No Configuration Files Needed
 
@@ -66,25 +76,33 @@ The app allows you to configure API keys directly in the interface:
 - ✅ **No environment variables** - All settings in the app
 - ✅ **Secure input fields** - API keys are masked in the interface
 - ✅ **Session-based storage** - Keys stored only during your session
+- ✅ **Language persistence** - Your language choice is remembered during the session
 
 ## 📖 How to Use
 
-1. **Configure API**: Select provider and enter your API key in the sidebar
-2. **Enter Query**: Input your main search query
-3. **Analyze**: Click "Analyze Query" to generate predictions  
-4. **Review Results**: Examine predicted sub-queries with probability scores
-5. **Export Data**: Download results for further analysis
-6. **Iterate**: Test different queries and compare results
+1. **Select Language**: Choose your preferred language from the sidebar (EN, ES, FR, DE, IT)
+2. **Configure API**: Select provider and enter your API key in the sidebar
+3. **Enter Query**: Input your main search query in your chosen language
+4. **Use Samples**: Click on sample queries for quick testing
+5. **Analyze**: Click "Analyze Query" to generate AI-powered predictions  
+6. **Review Results**: Examine predicted sub-queries with probability scores and reasoning
+7. **Export Data**: Download results for further analysis
+8. **Iterate**: Test different queries and languages
 
 ### Example Analysis
 
-**Input**: "best smartphones 2024"
+**English Input**: "best smartphones 2024"
+**AI-Generated Sub-queries**:
+- "best smartphones 2024 camera quality" (89% probability)
+- "smartphone 2024 battery life comparison" (84% probability)  
+- "flagship smartphones 2024 vs 2023" (78% probability)
+- "best budget smartphones 2024 under $500" (72% probability)
 
-**Predicted Sub-queries**:
-- "best smartphones 2024 reviews" (87% probability)
-- "best smartphones 2024 comparison" (76% probability)  
-- "best smartphones 2024 price" (71% probability)
-- "best smartphone brands 2024" (68% probability)
+**Spanish Input**: "mejores smartphones 2024"
+**Sub-consultas Generadas por IA**:
+- "mejores smartphones 2024 calidad cámara" (87% probabilidad)
+- "smartphones 2024 comparación duración batería" (83% probabilidad)
+- "smartphones gama alta 2024 vs 2023" (76% probabilidad)
 
 ## 🏗️ Project Structure
 
@@ -134,7 +152,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **Issues**: [GitHub Issues](https://github.com/your-username/qfap-analyzer/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/your-username/qfap-analyzer/discussions)
-- **Email**: your-email@example.com
+- **Email**: maximo.sanchez@feverup.com
 
 ## 🎯 Roadmap
 
