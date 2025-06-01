@@ -47,13 +47,13 @@ class MultilingualManager:
     
     def get_sample_queries(self, language_code: str = None) -> list:
         """Get sample queries for specific language"""
-        target_language = language_code or self.current_language
+        target_language = language_code if language_code else self.current_language
         lang_config = self.languages.get(target_language)
         return lang_config.sample_queries if lang_config else []
     
     def get_facet_categories(self, language_code: str = None) -> Dict[str, str]:
         """Get facet categories for specific language"""
-        target_language = language_code or self.current_language
+        target_language = language_code if language_code else self.current_language
         lang_config = self.languages.get(target_language)
         return lang_config.facet_categories if lang_config else {}
     
