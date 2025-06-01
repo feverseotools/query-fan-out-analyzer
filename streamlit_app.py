@@ -40,7 +40,7 @@ def load_default_settings():
         "ai_settings": {
             "temperature": 0.7,
             "max_predictions": 8,
-            "openai_model": "gpt-4",
+            "openai_model": "gpt-4",  # Default to GPT-4
             "fallback_enabled": True
         },
         "analysis_settings": {
@@ -162,12 +162,27 @@ def show_settings_page():
     with col1:
         # OpenAI Model Selection
         openai_models = ["gpt-4", "gpt-4o-mini", "gpt-4o"]
-        settings["ai_settings"]["openai_model"] = st.selectbox(
+        model_display_names = {
+            "gpt-4": "GPT-4",
+            "gpt-4o-mini": "GPT-4.1 Mini", 
+            "gpt-4o": "GPT-4.1 Nano"
+        }
+        
+        # Create display options
+        display_options = [f"{model_display_names[model]} ({model})" for model in openai_models]
+        current_model = settings["ai_settings"]["openai_model"]
+        current_display = f"{model_display_names[current_model]} ({current_model})"
+        
+        selected_display = st.selectbox(
             "OpenAI Model:",
-            openai_models,
-            index=openai_models.index(settings["ai_settings"]["openai_model"]),
+            display_options,
+            index=display_options.index(current_display),
             help="Choose the OpenAI model for generating predictions"
         )
+        
+        # Extract the actual model name
+        selected_model = selected_display.split("(")[1].split(")")[0]
+        settings["ai_settings"]["openai_model"] = selected_model
         
         # Temperature Control
         settings["ai_settings"]["temperature"] = st.slider(
@@ -448,10 +463,21 @@ def main():
     # Show current key settings summary
     if 'user_settings' in st.session_state:
         ai_settings = st.session_state.user_settings.get("ai_settings", {})
+        
+        # Model display mapping
+        model_display_names = {
+            "gpt-4": "GPT-4",
+            "gpt-4o-mini": "GPT-4.1 Mini", 
+            "gpt-4o": "GPT-4.1 Nano"
+        }
+        
+        current_model = ai_settings.get('openai_model', 'gpt-4')
+        model_display = model_display_names.get(current_model, current_model)
+        
         with st.sidebar.expander("📋 Current Settings", expanded=False):
             st.write(f"**Temperature:** {ai_settings.get('temperature', 0.7)}")
             st.write(f"**Max Predictions:** {ai_settings.get('max_predictions', 8)}")
-            st.write(f"**Model:** {ai_settings.get('openai_model', 'gpt-4')}")
+            st.write(f"**Model:** {model_display}")
     
     st.sidebar.markdown("---")
     
