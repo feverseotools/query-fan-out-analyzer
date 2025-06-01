@@ -42,6 +42,12 @@ langdetect>=1.0.9
 # Additional utilities for multilingual support
 babel>=2.12.0
 
+# Excel export support (optional)
+openpyxl>=3.1.0
+
+# For itertools functionality
+more-itertools>=8.0.0
+
 # Optional: For enhanced text processing (if needed later)
 # spacy>=3.6.0
 # transformers>=4.30.0
