@@ -42,7 +42,6 @@ fixMatplotlib = true
 level = "info"
 messageFormat = "%(asctime)s %(message)s"
 
-[ui]
-# Hide sidebar navigation
-hideTopBar = false
-hideSidebarNav = true
+[global]
+# Disable page navigation
+showSidebarNavigation = false
