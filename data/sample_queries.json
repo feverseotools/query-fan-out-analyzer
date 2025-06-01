@@ -1,0 +1,78 @@
+{
+  "sample_queries": [
+    {
+      "query": "best laptops 2024",
+      "expected_intent": "commercial_investigation",
+      "expected_category": "technology",
+      "description": "Commercial query about laptop recommendations"
+    },
+    {
+      "query": "how to lose weight fast",
+      "expected_intent": "informational",
+      "expected_category": "health",
+      "description": "Informational health query"
+    },
+    {
+      "query": "iPhone 15 vs Samsung Galaxy S24",
+      "expected_intent": "commercial_investigation",
+      "expected_category": "technology",
+      "description": "Comparison query between smartphone models"
+    },
+    {
+      "query": "digital marketing course online",
+      "expected_intent": "mixed",
+      "expected_category": "education",
+      "description": "Educational service query"
+    },
+    {
+      "query": "Tesla Model 3 price",
+      "expected_intent": "transactional",
+      "expected_category": "ecommerce",
+      "description": "Pricing inquiry for specific product"
+    },
+    {
+      "query": "restaurants near me",
+      "expected_intent": "navigational",
+      "expected_category": "food",
+      "description": "Local business search"
+    },
+    {
+      "query": "investment strategies 2024",
+      "expected_intent": "informational",
+      "expected_category": "finance",
+      "description": "Financial advice query"
+    },
+    {
+      "query": "best travel destinations Europe",
+      "expected_intent": "commercial_investigation",
+      "expected_category": "travel",
+      "description": "Travel planning query"
+    }
+  ],
+  "test_scenarios": [
+    {
+      "scenario": "E-commerce Product Research",
+      "queries": [
+        "wireless headphones under $100",
+        "Nike running shoes reviews",
+        "best kitchen knives for chefs"
+      ]
+    },
+    {
+      "scenario": "Software/Tech Research",
+      "queries": [
+        "project management software comparison",
+        "Adobe Photoshop alternatives free",
+        "how to learn Python programming"
+      ]
+    },
+    {
+      "scenario": "Service-based Queries",
+      "queries": [
+        "web design agency near me",
+        "personal trainer certification",
+        "accounting software for small business"
+      ]
+    }
+  ]
+}
