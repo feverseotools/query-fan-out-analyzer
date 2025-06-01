@@ -11,6 +11,13 @@ import sys
 src_path = Path(__file__).parent / "src"
 sys.path.append(str(src_path))
 
+# Import our professional prediction engine
+try:
+    from core.fanout_engine import ProfessionalFanOutEngine
+    ENGINE_AVAILABLE = True
+except ImportError:
+    ENGINE_AVAILABLE = False
+
 # Page configuration
 st.set_page_config(
     page_title="QFAP - Query Fan-Out Analyzer",
@@ -38,8 +45,15 @@ def main():
         st.session_state.analysis_history = []
         st.session_state.current_query = ""
         st.session_state.predictions = []
+        st.session_state.query_analysis = None
         st.session_state.api_provider = None
         st.session_state.api_key = None
+        
+        # Initialize prediction engine
+        if ENGINE_AVAILABLE:
+            st.session_state.fanout_engine = ProfessionalFanOutEngine()
+        else:
+            st.session_state.fanout_engine = None
     
     # Sidebar navigation and configuration
     st.sidebar.title("🔍 QFAP Navigation")
@@ -102,15 +116,40 @@ def main():
                     st.error("⚠️ Please configure your API key in the sidebar first!")
                 else:
                     with st.spinner("Analyzing query and predicting fan-out..."):
-                        # Placeholder for actual AI analysis
-                        # TODO: Replace with real AI integration
                         st.session_state.current_query = query
-                        st.session_state.predictions = [
-                            {"sub_query": f"{query} reviews", "probability": 0.87, "facet": "Reviews"},
-                            {"sub_query": f"{query} comparison", "probability": 0.76, "facet": "Comparison"},
-                            {"sub_query": f"{query} price", "probability": 0.71, "facet": "Price"},
-                            {"sub_query": f"best {query.split()[-1]} brands", "probability": 0.68, "facet": "Brands"}
-                        ]
+                        
+                        # Use professional prediction engine if available
+                        if st.session_state.fanout_engine:
+                            try:
+                                # Get professional predictions
+                                predictions = st.session_state.fanout_engine.generate_fanout_predictions(query)
+                                st.session_state.query_analysis = st.session_state.fanout_engine.analyze_query(query)
+                                
+                                # Convert to format expected by UI
+                                st.session_state.predictions = [
+                                    {
+                                        "sub_query": pred.query,
+                                        "probability": pred.probability,
+                                        "facet": pred.facet,
+                                        "intent_type": pred.intent_type,
+                                        "reasoning": pred.reasoning
+                                    }
+                                    for pred in predictions
+                                ]
+                            except Exception as e:
+                                st.error(f"Error in prediction engine: {str(e)}")
+                                # Fallback to basic predictions
+                                st.session_state.predictions = [
+                                    {"sub_query": f"{query} reviews", "probability": 0.87, "facet": "Reviews", "intent_type": "commercial", "reasoning": "Basic fallback"},
+                                    {"sub_query": f"{query} comparison", "probability": 0.76, "facet": "Comparison", "intent_type": "commercial", "reasoning": "Basic fallback"}
+                                ]
+                        else:
+                            # Basic fallback predictions
+                            st.session_state.predictions = [
+                                {"sub_query": f"{query} reviews", "probability": 0.87, "facet": "Reviews", "intent_type": "commercial", "reasoning": "Engine not available"},
+                                {"sub_query": f"{query} comparison", "probability": 0.76, "facet": "Comparison", "intent_type": "commercial", "reasoning": "Engine not available"}
+                            ]
+                        
                         st.success("✅ Analysis completed!")
                         st.rerun()
         
@@ -132,23 +171,76 @@ def main():
     # Results section
     if st.session_state.predictions:
         st.markdown("---")
+        
+        # Query Analysis Summary (if available)
+        if st.session_state.get('query_analysis'):
+            analysis = st.session_state.query_analysis
+            
+            with st.expander("🔍 Query Analysis Details", expanded=False):
+                col1, col2, col3 = st.columns(3)
+                
+                with col1:
+                    st.metric("Intent Type", analysis.intent_type.replace('_', ' ').title())
+                    st.metric("Category", analysis.category.title())
+                
+                with col2:
+                    st.metric("Commercial Intent", f"{analysis.commercial_intent:.0%}")
+                    st.metric("Complexity", analysis.query_complexity.title())
+                
+                with col3:
+                    if analysis.entities:
+                        st.metric("Key Entities", len(analysis.entities))
+                        st.write("**Entities Found:**")
+                        for entity in analysis.entities[:5]:  # Show max 5
+                            st.write(f"• {entity}")
+        
         st.header("🎯 Predicted Sub-Queries")
         
-        # Display predictions in a table
-        import pandas as pd
-        df = pd.DataFrame(st.session_state.predictions)
-        df['probability'] = df['probability'].apply(lambda x: f"{x:.0%}")
+        # Enhanced predictions display
+        for i, pred in enumerate(st.session_state.predictions):
+            with st.container():
+                col1, col2, col3 = st.columns([3, 1, 1])
+                
+                with col1:
+                    st.write(f"**{i+1}. {pred['sub_query']}**")
+                    if 'reasoning' in pred:
+                        st.caption(f"💡 {pred['reasoning']}")
+                
+                with col2:
+                    # Probability with color coding
+                    prob = pred['probability']
+                    if prob >= 0.8:
+                        st.success(f"🟢 {prob:.0%}")
+                    elif prob >= 0.6:
+                        st.warning(f"🟡 {prob:.0%}")
+                    else:
+                        st.info(f"🔵 {prob:.0%}")
+                
+                with col3:
+                    st.write(f"**{pred['facet']}**")
+                    if 'intent_type' in pred:
+                        st.caption(pred['intent_type'].replace('_', ' ').title())
+                
+                st.divider()
         
-        st.dataframe(
-            df,
-            column_config={
-                "sub_query": st.column_config.TextColumn("Sub-Query", width="large"),
-                "probability": st.column_config.TextColumn("Probability", width="small"),
-                "facet": st.column_config.TextColumn("Facet", width="medium")
-            },
-            hide_index=True,
-            use_container_width=True
-        )
+        # Summary table for export
+        with st.expander("📊 Export Data Table", expanded=False):
+            import pandas as pd
+            df = pd.DataFrame(st.session_state.predictions)
+            df['probability'] = df['probability'].apply(lambda x: f"{x:.0%}")
+            
+            st.dataframe(
+                df,
+                column_config={
+                    "sub_query": st.column_config.TextColumn("Sub-Query", width="large"),
+                    "probability": st.column_config.TextColumn("Probability", width="small"),
+                    "facet": st.column_config.TextColumn("Facet", width="medium"),
+                    "intent_type": st.column_config.TextColumn("Intent", width="medium"),
+                    "reasoning": st.column_config.TextColumn("Reasoning", width="large")
+                },
+                hide_index=True,
+                use_container_width=True
+            )
         
         # Export options
         col1, col2, col3 = st.columns(3)
