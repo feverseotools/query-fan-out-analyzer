@@ -62,15 +62,8 @@ def main():
             st.session_state.fanout_engine = None
             st.session_state.ai_client = None
     
-    # Get current language strings (always English for UI)
-    def t(key, **kwargs):
-        """Translation helper function - Always returns English for UI"""
-        if st.session_state.ml_manager:
-            # Always use English for UI strings
-            en_config = st.session_state.ml_manager.get_available_languages().get("en")
-            if en_config and key in en_config.ui_strings:
-                return en_config.ui_strings[key].format(**kwargs)
-        return key
+    # Remove translation function - UI always in English
+    # Language selection only affects analysis, not UI
     
     # Sidebar navigation and configuration
     st.sidebar.title("🔍 QFAP Navigation")
@@ -165,8 +158,7 @@ def main():
             # Query input with sample queries
             if st.session_state.ml_manager:
                 # Get sample queries for selected analysis language
-                st.session_state.ml_manager.set_language(st.session_state.language)
-                sample_queries = st.session_state.ml_manager.get_sample_queries()
+                sample_queries = st.session_state.ml_manager.get_sample_queries(st.session_state.language)
                 placeholder_text = sample_queries[0] if sample_queries else "e.g., best smartphones 2024"
             else:
                 placeholder_text = "e.g., best smartphones 2024"
@@ -178,9 +170,10 @@ def main():
             )
             
             # Show sample queries for current analysis language
-            if st.session_state.ml_manager:
-                with st.expander(f"💡 Sample Queries ({languages[st.session_state.language].name})", expanded=False):
-                    sample_queries = st.session_state.ml_manager.get_sample_queries()
+            if st.session_state.ml_manager and st.session_state.language in languages:
+                current_lang = languages[st.session_state.language]
+                with st.expander(f"💡 Sample Queries ({current_lang.name})", expanded=False):
+                    sample_queries = st.session_state.ml_manager.get_sample_queries(st.session_state.language)
                     for i, sample in enumerate(sample_queries[:5]):
                         if st.button(f"📝 {sample}", key=f"sample_{i}"):
                             st.session_state.temp_query = sample
@@ -199,7 +192,12 @@ def main():
                 if not st.session_state.get('api_key'):
                     st.error("⚠️ Please configure your API key in the sidebar first!")
                 else:
-                    with st.spinner(f"Analyzing query in {languages[st.session_state.language].name} and predicting fan-out..."):
+                    # Get current language name for spinner message
+                    current_lang_name = "English"
+                    if st.session_state.language in languages:
+                        current_lang_name = languages[st.session_state.language].name
+                    
+                    with st.spinner(f"Analyzing query in {current_lang_name} and predicting fan-out..."):
                         st.session_state.current_query = query
                         
                         # Use AI client for predictions if available
@@ -268,9 +266,14 @@ def main():
             st.header("📊 Quick Stats")
             
             # Show current analysis language
+            current_lang_name = "English"
+            current_lang_flag = "🇺🇸"
             if st.session_state.language in languages:
                 current_lang = languages[st.session_state.language]
-                st.metric("Analysis Language", f"{current_lang.flag} {current_lang.name}")
+                current_lang_name = current_lang.name
+                current_lang_flag = current_lang.flag
+                
+            st.metric("Analysis Language", f"{current_lang_flag} {current_lang_name}")
             
             if st.session_state.get('api_key'):
                 api_status = f"✅ {st.session_state.get('api_provider', 'Unknown')} Connected"
