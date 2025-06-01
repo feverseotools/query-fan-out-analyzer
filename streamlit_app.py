@@ -321,70 +321,58 @@ def load_css():
     # Custom CSS and JavaScript to hide ONLY navigation elements, keep user content
     st.markdown("""
     <style>
-    /* Hide ONLY the automatic Streamlit page navigation at the top of sidebar */
-    [data-testid="stSidebar"] > div > div:first-child > div:first-child {
+    /* Hide ONLY the automatic Streamlit page navigation */
+    [data-testid="stSidebar"] nav[role="navigation"] {
         display: none !important;
     }
     
-    /* Hide the page selector widget specifically */
-    [data-testid="stSidebar"] nav {
+    /* Hide page navigation radio buttons at very top of sidebar */
+    [data-testid="stSidebar"] > div > div:first-child > div:first-child:has(.stRadio) {
         display: none !important;
     }
     
-    /* Hide the default page navigation container */
-    .css-1rs6os.edgvbvh3 {
+    /* More specific targeting for page navigation only */
+    [data-testid="stSidebar"] .stRadio[data-baseweb="radio"]:first-of-type {
         display: none !important;
     }
     
-    /* Hide page navigation radio buttons/selectbox at top of sidebar */
-    [data-testid="stSidebar"] > div > div:first-child > div[data-testid="element-container"]:first-child {
-        display: none !important;
-    }
-    
-    /* More specific: hide only if it contains page navigation */
-    [data-testid="stSidebar"] .stRadio:first-child,
-    [data-testid="stSidebar"] .stSelectbox:first-child {
-        display: none !important;
-    }
-    
-    /* Keep all user-defined content visible - this ensures our custom sidebar content remains */
+    /* Ensure our custom content remains visible */
     [data-testid="stSidebar"] .stMarkdown,
-    [data-testid="stSidebar"] .stSelectbox:not(:first-child),
+    [data-testid="stSidebar"] .stSelectbox,
     [data-testid="stSidebar"] .stTextInput,
-    [data-testid="stSidebar"] .stButton {
+    [data-testid="stSidebar"] .stButton,
+    [data-testid="stSidebar"] h2,
+    [data-testid="stSidebar"] h3 {
+        display: block !important;
+        visibility: visible !important;
+    }
+    
+    /* Make sure language selector is always visible */
+    [data-testid="stSidebar"] div[data-testid="stSelectbox"] {
         display: block !important;
     }
     </style>
     
     <script>
-    // JavaScript to specifically target page navigation elements
+    // More conservative JavaScript - only target specific navigation text
     setTimeout(function() {
-        // Remove elements that contain specific navigation text
-        var sidebarElements = document.querySelectorAll('[data-testid="stSidebar"] *');
-        sidebarElements.forEach(function(element) {
-            if (element.textContent && 
-                (element.textContent.includes('streamlit app') || 
-                 element.textContent.includes('Advanced Settings')) &&
-                element.tagName !== 'BUTTON') {
-                // Hide the parent container of navigation elements
-                var parent = element.closest('div[data-testid="element-container"]');
-                if (parent) {
-                    parent.style.display = 'none';
+        var sidebarDivs = document.querySelectorAll('[data-testid="stSidebar"] div');
+        sidebarDivs.forEach(function(div) {
+            // Only hide if it's specifically page navigation
+            if (div.textContent && 
+                div.textContent.trim() === 'streamlit app' ||
+                (div.textContent.includes('streamlit app') && 
+                 div.textContent.includes('Advanced Settings') &&
+                 div.children.length <= 2)) {
+                
+                // Find the closest container that's the navigation widget
+                var navContainer = div.closest('[data-testid="element-container"]');
+                if (navContainer && navContainer.querySelector('div[role="radiogroup"], select')) {
+                    navContainer.style.display = 'none';
                 }
             }
         });
-    }, 1000);
-    
-    // Continuous monitoring for dynamically loaded navigation
-    setInterval(function() {
-        // Target the first element in sidebar if it's navigation
-        var firstElement = document.querySelector('[data-testid="stSidebar"] > div > div:first-child > div:first-child');
-        if (firstElement && 
-            (firstElement.textContent.includes('streamlit app') || 
-             firstElement.textContent.includes('Advanced Settings'))) {
-            firstElement.style.display = 'none';
-        }
-    }, 500);
+    }, 1500);
     </script>
     """, unsafe_allow_html=True)
     
@@ -435,6 +423,35 @@ def main():
     
     # Sidebar navigation - simplified
     st.sidebar.title("🔍 QFAP")
+    st.sidebar.markdown("---")
+    
+    # Language Selection (for analysis only, not UI)
+    if st.session_state.ml_manager:
+        st.sidebar.subheader("🌍 Analysis Language")
+        
+        languages = st.session_state.ml_manager.get_available_languages()
+        language_options = {f"{lang_config.flag} {lang_config.name}": lang_config.code 
+                          for lang_code, lang_config in languages.items()}
+        
+        current_lang_display = next((f"{lang_config.flag} {lang_config.name}" 
+                                   for lang_code, lang_config in languages.items() 
+                                   if lang_code == st.session_state.language), "🇺🇸 English")
+        
+        selected_language = st.sidebar.selectbox(
+            "Select Language for Analysis:",
+            options=list(language_options.keys()),
+            index=list(language_options.keys()).index(current_lang_display),
+            help="Choose the language for query analysis and predictions (UI remains in English)"
+        )
+        
+        new_language = language_options[selected_language]
+        if new_language != st.session_state.language:
+            st.session_state.language = new_language
+            # Only set language for analysis, not for UI
+            if st.session_state.fanout_engine:
+                st.session_state.fanout_engine.set_language(new_language)
+            st.rerun()
+    
     st.sidebar.markdown("---")
     
     # Settings Link
