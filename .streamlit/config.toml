@@ -41,3 +41,8 @@ fixMatplotlib = true
 # Logging settings
 level = "info"
 messageFormat = "%(asctime)s %(message)s"
+
+[ui]
+# Hide sidebar navigation
+hideTopBar = false
+hideSidebarNav = true
