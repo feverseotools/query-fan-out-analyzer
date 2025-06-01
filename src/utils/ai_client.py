@@ -19,21 +19,30 @@ class AIResponse:
 
 class MultilingualAIClient:
     
-    def __init__(self, provider: str, api_key: str, language: str = "en"):
+    def __init__(self, provider: str, api_key: str, language: str = "en", settings: dict = None):
         self.provider = provider.lower()
         self.api_key = api_key
         self.language = language
+        self.settings = settings or {}
         self.client = None
+        
+        # Get AI settings from user configuration
+        ai_settings = self.settings.get("ai_settings", {})
         
         # Initialize client based on provider
         if self.provider == "openai":
             self.client = openai.OpenAI(api_key=api_key)
-            self.model = "gpt-4"
+            self.model = ai_settings.get("openai_model", "gpt-4")
         elif self.provider == "anthropic":
             self.client = anthropic.Anthropic(api_key=api_key)
-            self.model = "claude-3-sonnet-20240229"
+            self.model = ai_settings.get("anthropic_model", "claude-3-sonnet-20240229")
         else:
             raise ValueError(f"Unsupported provider: {provider}")
+        
+        # Set generation parameters
+        self.temperature = ai_settings.get("temperature", 0.7)
+        self.max_predictions = ai_settings.get("max_predictions", 8)
+        self.fallback_enabled = ai_settings.get("fallback_enabled", True)
     
     def generate_fanout_predictions(self, query: str, query_analysis: Dict) -> AIResponse:
         """Generate fan-out predictions using real AI APIs"""
@@ -114,7 +123,7 @@ Query Analysis:
 - Commercial Intent: {analysis.get('commercial_intent', 0.5):.0%}
 - Language: {self.language}
 
-Generate 6-8 realistic sub-queries that represent how Google's AI Mode would expand this query. Consider:
+Generate {self.max_predictions} realistic sub-queries that represent how Google's AI Mode would expand this query. Consider:
 
 1. **Intent-based variations**: Based on user search intent
 2. **Entity-specific queries**: Focusing on key entities in the original query
@@ -151,7 +160,7 @@ Important: Generate sub-queries in {self.language} language that are natural and
                     {"role": "system", "content": "You are an expert SEO and query analysis specialist."},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.7,
+                temperature=self.temperature,
                 max_tokens=2000
             )
             return response.choices[0].message.content
@@ -164,7 +173,7 @@ Important: Generate sub-queries in {self.language} language that are natural and
             response = self.client.messages.create(
                 model=self.model,
                 max_tokens=2000,
-                temperature=0.7,
+                temperature=self.temperature,
                 messages=[
                     {"role": "user", "content": prompt}
                 ]
@@ -198,7 +207,7 @@ Important: Generate sub-queries in {self.language} language that are natural and
                             'reasoning': pred.get('reasoning', 'AI generated prediction')
                         })
                 
-                return cleaned_predictions[:8]  # Limit to 8 predictions
+                return cleaned_predictions[:self.max_predictions]  # Limit based on settings
             else:
                 raise ValueError("No valid JSON found in response")
                 
