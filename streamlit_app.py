@@ -58,7 +58,6 @@ def main():
                 "temperature": 0.7,
                 "max_predictions": 8,
                 "openai_model": "gpt-4",
-                "anthropic_model": "claude-3-sonnet-20240229",
                 "fallback_enabled": True
             },
             "analysis_settings": {
@@ -108,7 +107,7 @@ def main():
         with st.sidebar.expander("📋 Current Settings", expanded=False):
             st.write(f"**Temperature:** {ai_settings.get('temperature', 0.7)}")
             st.write(f"**Max Predictions:** {ai_settings.get('max_predictions', 8)}")
-            st.write(f"**Model:** {ai_settings.get('openai_model', 'gpt-4')} / {ai_settings.get('anthropic_model', 'claude-3-sonnet')}")
+            st.write(f"**Model:** {ai_settings.get('openai_model', 'gpt-4')}")
     
     st.sidebar.markdown("---")
     
@@ -145,29 +144,25 @@ def main():
     st.sidebar.subheader("⚙️ API Configuration")
     
     # API Key input
-    api_provider = st.sidebar.selectbox(
-        "Select AI Provider:",
-        ["OpenAI", "Anthropic"],
-        help="Choose your preferred AI provider for query analysis"
-    )
+    api_provider = "OpenAI"  # Fixed to OpenAI only
     
     api_key = st.sidebar.text_input(
-        f"{api_provider} API Key:",
+        "OpenAI API Key:",
         type="password",
-        placeholder="Enter your API key here",
-        help=f"Your {api_provider} API key for generating predictions"
+        placeholder="Enter your OpenAI API key here",
+        help="Your OpenAI API key for generating predictions"
     )
     
     # Store API configuration in session state and create AI client
     if api_key and api_key != st.session_state.get('api_key'):
-        st.session_state.api_provider = api_provider
+        st.session_state.api_provider = "OpenAI"
         st.session_state.api_key = api_key
         
         # Create AI client with current language and user settings
         if ENGINE_AVAILABLE:
             try:
                 st.session_state.ai_client = MultilingualAIClient(
-                    provider=api_provider,
+                    provider="OpenAI",
                     api_key=api_key,
                     language=st.session_state.language,
                     settings=st.session_state.user_settings
@@ -341,7 +336,7 @@ def main():
             st.metric("Analysis Language", f"{current_lang_flag} {current_lang_name}")
             
             if st.session_state.get('api_key'):
-                api_status = f"✅ {st.session_state.get('api_provider', 'Unknown')} Connected"
+                api_status = f"✅ OpenAI Connected"
             else:
                 api_status = "⚠️ API Not Configured"
             
