@@ -150,7 +150,7 @@ def main():
     
     # Main content area
     st.title(t("app_title"))
-    st.markdown(f"**{t('app_subtitle')}**")")
+    st.markdown(f"**{t('app_subtitle')}**")
     
     # Quick start section
     with st.container():
