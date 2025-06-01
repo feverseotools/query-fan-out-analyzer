@@ -78,12 +78,12 @@ def main():
         st.sidebar.subheader("🌍 " + t("language_selection"))
         
         languages = st.session_state.ml_manager.get_available_languages()
-        language_options = {f"{config.flag} {config.name}": config.code 
-                          for config.code, config in languages.items()}
+        language_options = {f"{lang_config.flag} {lang_config.name}": lang_config.code 
+                          for lang_code, lang_config in languages.items()}
         
-        current_lang_display = next((f"{config.flag} {config.name}" 
-                                   for code, config in languages.items() 
-                                   if code == st.session_state.language), "🇺🇸 English")
+        current_lang_display = next((f"{lang_config.flag} {lang_config.name}" 
+                                   for lang_code, lang_config in languages.items() 
+                                   if lang_code == st.session_state.language), "🇺🇸 English")
         
         selected_language = st.sidebar.selectbox(
             t("select_language"),
