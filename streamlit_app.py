@@ -99,7 +99,7 @@ def main():
     # Settings Link
     st.sidebar.markdown("### 🔧 Configuration")
     if st.sidebar.button("⚙️ Advanced Settings"):
-        st.switch_page("pages/03_Advanced_Settings.py")
+        st.switch_page("pages/Advanced_Settings.py")
     
     # Show current key settings
     if 'user_settings' in st.session_state:
@@ -540,7 +540,7 @@ def main():
         if st.session_state.get('settings_saved'):
             st.success("✅ Custom settings are active!")
             if st.button("🔧 Modify Settings"):
-                st.switch_page("pages/03_Advanced_Settings.py")
+                st.switch_page("pages/Advanced_Settings.py")
     
     # Footer
     st.markdown("---")
