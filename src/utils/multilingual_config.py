@@ -45,14 +45,16 @@ class MultilingualManager:
         
         return key  # Return key if not found
     
-    def get_sample_queries(self) -> list:
-        """Get sample queries for current language"""
-        lang_config = self.languages.get(self.current_language)
+    def get_sample_queries(self, language_code: str = None) -> list:
+        """Get sample queries for specific language"""
+        target_language = language_code or self.current_language
+        lang_config = self.languages.get(target_language)
         return lang_config.sample_queries if lang_config else []
     
-    def get_facet_categories(self) -> Dict[str, str]:
-        """Get facet categories in current language"""
-        lang_config = self.languages.get(self.current_language)
+    def get_facet_categories(self, language_code: str = None) -> Dict[str, str]:
+        """Get facet categories for specific language"""
+        target_language = language_code or self.current_language
+        lang_config = self.languages.get(target_language)
         return lang_config.facet_categories if lang_config else {}
     
     def _load_language_configs(self) -> Dict[str, LanguageConfig]:
