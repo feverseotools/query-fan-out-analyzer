@@ -65,6 +65,13 @@ def load_default_settings():
 def show_settings_page():
     """Show the settings configuration page"""
     
+    # Clear sidebar content when in settings mode
+    st.sidebar.empty()
+    
+    # Simple sidebar for settings page
+    st.sidebar.title("🔍 QFAP")
+    st.sidebar.markdown("**Settings Mode**")
+    
     # Page header
     st.title("⚙️ Advanced Settings")
     st.markdown("""
@@ -554,13 +561,15 @@ def main():
     
     st.sidebar.markdown("---")
     
-    # Settings Link - Single button
+    # Settings Link - Single section
     st.sidebar.subheader("🔧 Configuration")
+    
+    # Single Advanced Settings button
     if st.sidebar.button("⚙️ Advanced Settings", use_container_width=True, key="settings_button_main"):
         st.session_state.show_settings = True
         st.rerun()
     
-    # Show current key settings summary
+    # Single Current Settings expander
     if 'user_settings' in st.session_state:
         ai_settings = st.session_state.user_settings.get("ai_settings", {})
         
