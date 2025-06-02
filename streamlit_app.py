@@ -14,7 +14,7 @@ def load_css():
     css_file = Path(__file__).parent / "assets" / "css" / "style.css"
     if css_file.exists():
         with open(css_file) as f:
-            st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)"""
+            st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 QFAP - Query Fan-Out Analyzer & Predictor
 Main Streamlit Application Entry Point with AI APIs and Multilingual Support
 """
