@@ -203,7 +203,8 @@ def show_settings_page():
             max_value=15,
             value=settings["ai_settings"]["max_predictions"],
             step=1,
-            help="Number of sub-queries to generate per analysis"
+            help="Number of sub-queries to generate per analysis",
+            key="max_predictions_slider_settings"
         )
         
         # Fallback Settings
@@ -227,7 +228,8 @@ def show_settings_page():
             max_value=0.9,
             value=settings["analysis_settings"]["min_probability_threshold"],
             step=0.05,
-            help="Hide predictions below this probability score"
+            help="Hide predictions below this probability score",
+            key="probability_threshold_slider_settings"
         )
         
         # Commercial Intent Weight
@@ -237,7 +239,8 @@ def show_settings_page():
             max_value=2.0,
             value=settings["analysis_settings"]["commercial_intent_weight"],
             step=0.1,
-            help="Boost commercial queries in scoring (1.0 = neutral)"
+            help="Boost commercial queries in scoring (1.0 = neutral)",
+            key="commercial_weight_slider_settings"
         )
     
     with col2:
@@ -245,14 +248,16 @@ def show_settings_page():
         settings["analysis_settings"]["include_reasoning"] = st.checkbox(
             "Include AI Reasoning",
             value=settings["analysis_settings"]["include_reasoning"],
-            help="Show explanation for each prediction"
+            help="Show explanation for each prediction",
+            key="include_reasoning_checkbox_settings"
         )
         
         # Entity Extraction
         settings["analysis_settings"]["enable_entity_extraction"] = st.checkbox(
             "Enable Entity Extraction",
             value=settings["analysis_settings"]["enable_entity_extraction"],
-            help="Extract and analyze key entities from queries"
+            help="Extract and analyze key entities from queries",
+            key="entity_extraction_checkbox_settings"
         )
     
     # Output Settings
@@ -266,14 +271,16 @@ def show_settings_page():
         settings["output_settings"]["group_by_facet"] = st.checkbox(
             "Group by Facet",
             value=settings["output_settings"]["group_by_facet"],
-            help="Organize predictions by category/facet"
+            help="Organize predictions by category/facet",
+            key="group_by_facet_checkbox_settings"
         )
         
         # Sort by Probability
         settings["output_settings"]["sort_by_probability"] = st.checkbox(
             "Sort by Probability",
             value=settings["output_settings"]["sort_by_probability"],
-            help="Order predictions by confidence score"
+            help="Order predictions by confidence score",
+            key="sort_by_probability_checkbox_settings"
         )
     
     with col2:
@@ -281,7 +288,8 @@ def show_settings_page():
         settings["output_settings"]["include_confidence_scores"] = st.checkbox(
             "Show Confidence Scores",
             value=settings["output_settings"]["include_confidence_scores"],
-            help="Display probability percentages"
+            help="Display probability percentages",
+            key="confidence_scores_checkbox_settings"
         )
         
         # Export Format
@@ -512,7 +520,8 @@ def main():
         "OpenAI API Key:",
         type="password",
         placeholder="Enter your OpenAI API key here",
-        help="Your OpenAI API key for generating predictions"
+        help="Your OpenAI API key for generating predictions",
+        key="openai_api_key_input"
     )
     
     # Store API configuration in session state and create AI client
@@ -598,7 +607,8 @@ def main():
             query = st.text_input(
                 "Enter your main query:",
                 placeholder=placeholder_text,
-                help="Enter the primary query you want to analyze for fan-out predictions"
+                help="Enter the primary query you want to analyze for fan-out predictions",
+                key="main_query_input"
             )
             
             # Show sample queries for current analysis language
