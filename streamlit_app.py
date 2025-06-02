@@ -335,61 +335,82 @@ def show_settings_page():
 
 # Custom CSS
 def load_css():
-    # Custom CSS and JavaScript to hide ONLY navigation elements, keep user content
+    # More aggressive CSS to completely hide automatic Streamlit navigation
     st.markdown("""
     <style>
-    /* Hide ONLY the automatic Streamlit page navigation */
-    [data-testid="stSidebar"] nav[role="navigation"] {
+    /* Hide ALL automatic page navigation elements */
+    [data-testid="stSidebar"] > div > div:first-child {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        overflow: hidden !important;
+    }
+    
+    /* Hide any radio button groups (page navigation) */
+    [data-testid="stSidebar"] div[role="radiogroup"] {
         display: none !important;
     }
     
-    /* Hide page navigation radio buttons at very top of sidebar */
-    [data-testid="stSidebar"] > div > div:first-child > div:first-child:has(.stRadio) {
+    /* Hide navigation selectboxes */
+    [data-testid="stSidebar"] > div > div:first-child div[data-testid="stSelectbox"] {
         display: none !important;
     }
     
-    /* More specific targeting for page navigation only */
-    [data-testid="stSidebar"] .stRadio[data-baseweb="radio"]:first-of-type {
+    /* More specific hiding of page navigation */
+    [data-testid="stSidebar"] nav,
+    [data-testid="stSidebar"] [role="navigation"] {
         display: none !important;
     }
     
-    /* Ensure our custom content remains visible */
-    [data-testid="stSidebar"] .stMarkdown,
-    [data-testid="stSidebar"] .stSelectbox,
-    [data-testid="stSidebar"] .stTextInput,
-    [data-testid="stSidebar"] .stButton,
-    [data-testid="stSidebar"] h2,
-    [data-testid="stSidebar"] h3 {
-        display: block !important;
-        visibility: visible !important;
+    /* Hide the container that holds page navigation */
+    section[data-testid="stSidebar"] > div > div:first-child > div:first-child {
+        display: none !important;
     }
     
-    /* Make sure language selector is always visible */
-    [data-testid="stSidebar"] div[data-testid="stSelectbox"] {
+    /* Force hide navigation with multiple selectors */
+    .css-1rs6os, .css-1d391kg, .css-1y4p8pa {
+        display: none !important;
+    }
+    
+    /* Ensure our custom content is visible */
+    [data-testid="stSidebar"] .element-container:not(:first-child) {
         display: block !important;
     }
     </style>
     
     <script>
-    // More conservative JavaScript - only target specific navigation text
-    setTimeout(function() {
-        var sidebarDivs = document.querySelectorAll('[data-testid="stSidebar"] div');
-        sidebarDivs.forEach(function(div) {
-            // Only hide if it's specifically page navigation
-            if (div.textContent && 
-                div.textContent.trim() === 'streamlit app' ||
-                (div.textContent.includes('streamlit app') && 
-                 div.textContent.includes('Advanced Settings') &&
-                 div.children.length <= 2)) {
-                
-                // Find the closest container that's the navigation widget
-                var navContainer = div.closest('[data-testid="element-container"]');
-                if (navContainer && navContainer.querySelector('div[role="radiogroup"], select')) {
-                    navContainer.style.display = 'none';
-                }
+    // Aggressive JavaScript to remove navigation elements
+    function hideNavigation() {
+        // Remove the first child of sidebar content (navigation)
+        const sidebar = document.querySelector('[data-testid="stSidebar"] > div > div:first-child');
+        if (sidebar && sidebar.children.length > 0) {
+            const firstChild = sidebar.children[0];
+            // Check if it's navigation by looking for radio buttons or specific text
+            if (firstChild.querySelector('[role="radiogroup"]') || 
+                firstChild.textContent.includes('Analysis Language') && firstChild.textContent.includes('Configuration')) {
+                firstChild.remove();
+            }
+        }
+        
+        // Also remove any radio groups
+        document.querySelectorAll('[data-testid="stSidebar"] div[role="radiogroup"]').forEach(el => el.remove());
+        
+        // Remove elements containing page navigation text
+        document.querySelectorAll('[data-testid="stSidebar"] *').forEach(el => {
+            if (el.textContent && el.textContent.includes('streamlit app')) {
+                el.closest('[data-testid="element-container"]')?.remove();
             }
         });
-    }, 1500);
+    }
+    
+    // Run multiple times to catch dynamically loaded content
+    setTimeout(hideNavigation, 100);
+    setTimeout(hideNavigation, 500);
+    setTimeout(hideNavigation, 1000);
+    setTimeout(hideNavigation, 2000);
+    
+    // Continuous monitoring
+    setInterval(hideNavigation, 1000);
     </script>
     """, unsafe_allow_html=True)
     
