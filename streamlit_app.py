@@ -73,7 +73,7 @@ def show_settings_page():
     """)
     
     # Back button
-    if st.button("← Back to Main App"):
+    if st.button("← Back to Main App", key="back_button_settings"):
         st.session_state.show_settings = False
         st.rerun()
     
@@ -114,7 +114,7 @@ def show_settings_page():
     }
     
     with col1:
-        if st.button("🎯 Conservative", use_container_width=True):
+        if st.button("🎯 Conservative", use_container_width=True, key="preset_conservative"):
             preset_config = presets["Conservative"]
             settings["ai_settings"]["temperature"] = preset_config["temperature"]
             settings["ai_settings"]["max_predictions"] = preset_config["max_predictions"]
@@ -124,7 +124,7 @@ def show_settings_page():
             st.rerun()
     
     with col2:
-        if st.button("⚖️ Balanced", use_container_width=True):
+        if st.button("⚖️ Balanced", use_container_width=True, key="preset_balanced"):
             preset_config = presets["Balanced"]
             settings["ai_settings"]["temperature"] = preset_config["temperature"]
             settings["ai_settings"]["max_predictions"] = preset_config["max_predictions"]
@@ -134,7 +134,7 @@ def show_settings_page():
             st.rerun()
     
     with col3:
-        if st.button("🚀 Aggressive", use_container_width=True):
+        if st.button("🚀 Aggressive", use_container_width=True, key="preset_aggressive"):
             preset_config = presets["Aggressive"]
             settings["ai_settings"]["temperature"] = preset_config["temperature"]
             settings["ai_settings"]["max_predictions"] = preset_config["max_predictions"]
@@ -144,7 +144,7 @@ def show_settings_page():
             st.rerun()
     
     with col4:
-        if st.button("🛒 E-commerce", use_container_width=True):
+        if st.button("🛒 E-commerce", use_container_width=True, key="preset_ecommerce"):
             preset_config = presets["E-commerce"]
             settings["ai_settings"]["temperature"] = preset_config["temperature"]
             settings["ai_settings"]["max_predictions"] = preset_config["max_predictions"]
@@ -177,7 +177,8 @@ def show_settings_page():
             "OpenAI Model:",
             display_options,
             index=display_options.index(current_display),
-            help="Choose the OpenAI model for generating predictions"
+            help="Choose the OpenAI model for generating predictions",
+            key="model_selector_settings"
         )
         
         # Extract the actual model name
@@ -289,7 +290,8 @@ def show_settings_page():
             "Default Export Format:",
             export_formats,
             index=export_formats.index(settings["output_settings"]["export_format"]),
-            help="Default format for data export"
+            help="Default format for data export",
+            key="export_format_selector_settings"
         )
     
     # Save Settings
@@ -297,19 +299,19 @@ def show_settings_page():
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        if st.button("💾 Save & Apply Settings", type="primary", use_container_width=True):
+        if st.button("💾 Save & Apply Settings", type="primary", use_container_width=True, key="save_settings_btn"):
             st.session_state.user_settings = settings
             st.session_state.settings_saved = True
             st.success("✅ Settings saved and applied!")
     
     with col2:
-        if st.button("🔄 Reset to Defaults", use_container_width=True):
+        if st.button("🔄 Reset to Defaults", use_container_width=True, key="reset_settings_btn"):
             st.session_state.user_settings = load_default_settings()
             st.success("✅ Reset to defaults!")
             st.rerun()
     
     with col3:
-        if st.button("🚀 Save & Return", use_container_width=True):
+        if st.button("🚀 Save & Return", use_container_width=True, key="save_return_btn"):
             st.session_state.user_settings = settings
             st.session_state.settings_saved = True
             st.session_state.show_settings = False
@@ -441,7 +443,8 @@ def main():
             "Select Language for Analysis:",
             options=list(language_options.keys()),
             index=list(language_options.keys()).index(current_lang_display),
-            help="Choose the language for query analysis and predictions (UI remains in English)"
+            help="Choose the language for query analysis and predictions (UI remains in English)",
+            key="language_selector_main"  # Add unique key to avoid conflicts
         )
         
         new_language = language_options[selected_language]
@@ -544,7 +547,7 @@ def main():
     
     # Settings Link - Single button
     st.sidebar.subheader("🔧 Configuration")
-    if st.sidebar.button("⚙️ Advanced Settings", use_container_width=True):
+    if st.sidebar.button("⚙️ Advanced Settings", use_container_width=True, key="settings_button_main"):
         st.session_state.show_settings = True
         st.rerun()
     
