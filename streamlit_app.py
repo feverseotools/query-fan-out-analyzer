@@ -1,4 +1,20 @@
-"""
+# Custom CSS
+def load_css():
+    # Simple CSS without aggressive navigation hiding since pages folder is deleted
+    st.markdown("""
+    <style>
+    /* Basic styling only */
+    .stApp {
+        background-color: #ffffff;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # Load additional CSS file if it exists
+    css_file = Path(__file__).parent / "assets" / "css" / "style.css"
+    if css_file.exists():
+        with open(css_file) as f:
+            st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)"""
 QFAP - Query Fan-Out Analyzer & Predictor
 Main Streamlit Application Entry Point with AI APIs and Multilingual Support
 """
@@ -65,12 +81,18 @@ def load_default_settings():
 def show_settings_page():
     """Show the settings configuration page"""
     
-    # Clear sidebar content when in settings mode
+    # Completely clear sidebar for settings page
     st.sidebar.empty()
     
-    # Simple sidebar for settings page
+    # Build clean sidebar for settings page
     st.sidebar.title("🔍 QFAP")
     st.sidebar.markdown("**Settings Mode**")
+    st.sidebar.markdown("---")
+    
+    # Back button in sidebar
+    if st.sidebar.button("← Back to Main App", key="back_button_settings", use_container_width=True):
+        st.session_state.show_settings = False
+        st.rerun()
     
     # Page header
     st.title("⚙️ Advanced Settings")
@@ -78,11 +100,6 @@ def show_settings_page():
     **Customize QFAP behavior to match your specific needs and workflow.**
     Configure AI parameters, analysis settings, and output preferences.
     """)
-    
-    # Back button
-    if st.button("← Back to Main App", key="back_button_settings"):
-        st.session_state.show_settings = False
-        st.rerun()
     
     # Current settings
     settings = st.session_state.user_settings.copy()
