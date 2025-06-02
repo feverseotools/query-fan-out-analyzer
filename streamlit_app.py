@@ -1,20 +1,4 @@
-# Custom CSS
-def load_css():
-    # Simple CSS without aggressive navigation hiding since pages folder is deleted
-    st.markdown("""
-    <style>
-    /* Basic styling only */
-    .stApp {
-        background-color: #ffffff;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-    
-    # Load additional CSS file if it exists
-    css_file = Path(__file__).parent / "assets" / "css" / "style.css"
-    if css_file.exists():
-        with open(css_file) as f:
-            st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+"""
 QFAP - Query Fan-Out Analyzer & Predictor
 Main Streamlit Application Entry Point with AI APIs and Multilingual Support
 """
@@ -44,7 +28,18 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# Custom CSS
 def load_css():
+    # Simple CSS styling
+    st.markdown("""
+    <style>
+    .stApp {
+        background-color: #ffffff;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # Load additional CSS file if it exists
     css_file = Path(__file__).parent / "assets" / "css" / "style.css"
     if css_file.exists():
         with open(css_file) as f:
@@ -56,7 +51,7 @@ def load_default_settings():
         "ai_settings": {
             "temperature": 0.7,
             "max_predictions": 8,
-            "openai_model": "gpt-4",  # Default to GPT-4
+            "openai_model": "gpt-4",
             "fallback_enabled": True
         },
         "analysis_settings": {
@@ -216,7 +211,8 @@ def show_settings_page():
             max_value=1.0,
             value=settings["ai_settings"]["temperature"],
             step=0.1,
-            help="Higher values = more creative/diverse predictions. Lower = more focused/conservative."
+            help="Higher values = more creative/diverse predictions. Lower = more focused/conservative.",
+            key="temperature_slider_settings"
         )
     
     with col2:
@@ -235,7 +231,8 @@ def show_settings_page():
         settings["ai_settings"]["fallback_enabled"] = st.checkbox(
             "Enable Local Fallback",
             value=settings["ai_settings"]["fallback_enabled"],
-            help="Use local prediction engine if API fails"
+            help="Use local prediction engine if API fails",
+            key="fallback_checkbox_settings"
         )
     
     # Analysis Settings
@@ -350,93 +347,6 @@ def show_settings_page():
             st.success("✅ Settings applied!")
             st.rerun()
 
-# Custom CSS
-def load_css():
-    # More aggressive CSS to completely hide automatic Streamlit navigation
-    st.markdown("""
-    <style>
-    /* Hide ALL automatic page navigation elements */
-    [data-testid="stSidebar"] > div > div:first-child {
-        display: none !important;
-        visibility: hidden !important;
-        height: 0 !important;
-        overflow: hidden !important;
-    }
-    
-    /* Hide any radio button groups (page navigation) */
-    [data-testid="stSidebar"] div[role="radiogroup"] {
-        display: none !important;
-    }
-    
-    /* Hide navigation selectboxes */
-    [data-testid="stSidebar"] > div > div:first-child div[data-testid="stSelectbox"] {
-        display: none !important;
-    }
-    
-    /* More specific hiding of page navigation */
-    [data-testid="stSidebar"] nav,
-    [data-testid="stSidebar"] [role="navigation"] {
-        display: none !important;
-    }
-    
-    /* Hide the container that holds page navigation */
-    section[data-testid="stSidebar"] > div > div:first-child > div:first-child {
-        display: none !important;
-    }
-    
-    /* Force hide navigation with multiple selectors */
-    .css-1rs6os, .css-1d391kg, .css-1y4p8pa {
-        display: none !important;
-    }
-    
-    /* Ensure our custom content is visible */
-    [data-testid="stSidebar"] .element-container:not(:first-child) {
-        display: block !important;
-    }
-    </style>
-    
-    <script>
-    // Aggressive JavaScript to remove navigation elements
-    function hideNavigation() {
-        // Remove the first child of sidebar content (navigation)
-        const sidebar = document.querySelector('[data-testid="stSidebar"] > div > div:first-child');
-        if (sidebar && sidebar.children.length > 0) {
-            const firstChild = sidebar.children[0];
-            // Check if it's navigation by looking for radio buttons or specific text
-            if (firstChild.querySelector('[role="radiogroup"]') || 
-                firstChild.textContent.includes('Analysis Language') && firstChild.textContent.includes('Configuration')) {
-                firstChild.remove();
-            }
-        }
-        
-        // Also remove any radio groups
-        document.querySelectorAll('[data-testid="stSidebar"] div[role="radiogroup"]').forEach(el => el.remove());
-        
-        // Remove elements containing page navigation text
-        document.querySelectorAll('[data-testid="stSidebar"] *').forEach(el => {
-            if (el.textContent && el.textContent.includes('streamlit app')) {
-                el.closest('[data-testid="element-container"]')?.remove();
-            }
-        });
-    }
-    
-    // Run multiple times to catch dynamically loaded content
-    setTimeout(hideNavigation, 100);
-    setTimeout(hideNavigation, 500);
-    setTimeout(hideNavigation, 1000);
-    setTimeout(hideNavigation, 2000);
-    
-    // Continuous monitoring
-    setInterval(hideNavigation, 1000);
-    </script>
-    """, unsafe_allow_html=True)
-    
-    # Load additional CSS file if it exists
-    css_file = Path(__file__).parent / "assets" / "css" / "style.css"
-    if css_file.exists():
-        with open(css_file) as f:
-            st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
-
 def main():
     """Main application function"""
     
@@ -453,7 +363,7 @@ def main():
         st.session_state.api_provider = None
         st.session_state.api_key = None
         st.session_state.language = "en"
-        st.session_state.show_settings = False  # Add settings page control
+        st.session_state.show_settings = False
         
         # Initialize default user settings
         st.session_state.user_settings = load_default_settings()
@@ -468,19 +378,23 @@ def main():
             st.session_state.fanout_engine = None
             st.session_state.ai_client = None
     
-    # Check if should show settings page
+    # Check if should show settings page FIRST
     if st.session_state.get('show_settings', False):
         show_settings_page()
-        return
+        return  # Exit here, don't build main UI
     
-    # Remove translation function - UI always in English
-    # Language selection only affects analysis, not UI
+    # ========================================
+    # BUILD SIDEBAR ONLY ONCE
+    # ========================================
     
-    # Sidebar navigation - simplified
+    # Clear any existing sidebar content
+    st.sidebar.empty()
+    
+    # Build sidebar from scratch
     st.sidebar.title("🔍 QFAP")
     st.sidebar.markdown("---")
     
-    # Language Selection (for analysis only, not UI)
+    # Language Selection - SINGLE INSTANCE
     if st.session_state.ml_manager:
         st.sidebar.subheader("🌍 Analysis Language")
         
@@ -497,69 +411,20 @@ def main():
             options=list(language_options.keys()),
             index=list(language_options.keys()).index(current_lang_display),
             help="Choose the language for query analysis and predictions (UI remains in English)",
-            key="language_selector_main"  # Add unique key to avoid conflicts
+            key="language_selector_main"
         )
         
         new_language = language_options[selected_language]
         if new_language != st.session_state.language:
             st.session_state.language = new_language
-            # Only set language for analysis, not for UI
             if st.session_state.fanout_engine:
                 st.session_state.fanout_engine.set_language(new_language)
             st.rerun()
     
     st.sidebar.markdown("---")
     
-    # Settings Link
-    st.sidebar.markdown("### 🔧 Configuration")
-    if st.sidebar.button("⚙️ Advanced Settings"):
-        st.session_state.show_settings = True
-        st.rerun()
-    
-    # Show current key settings
-    if 'user_settings' in st.session_state:
-        ai_settings = st.session_state.user_settings.get("ai_settings", {})
-        with st.sidebar.expander("📋 Current Settings", expanded=False):
-            st.write(f"**Temperature:** {ai_settings.get('temperature', 0.7)}")
-            st.write(f"**Max Predictions:** {ai_settings.get('max_predictions', 8)}")
-            st.write(f"**Model:** {ai_settings.get('openai_model', 'gpt-4')}")
-    
-    st.sidebar.markdown("---")
-    
-    # Language Selection (for analysis only, not UI)
-    if st.session_state.ml_manager:
-        st.sidebar.subheader("🌍 Analysis Language")
-        
-        languages = st.session_state.ml_manager.get_available_languages()
-        language_options = {f"{lang_config.flag} {lang_config.name}": lang_config.code 
-                          for lang_code, lang_config in languages.items()}
-        
-        current_lang_display = next((f"{lang_config.flag} {lang_config.name}" 
-                                   for lang_code, lang_config in languages.items() 
-                                   if lang_code == st.session_state.language), "🇺🇸 English")
-        
-        selected_language = st.sidebar.selectbox(
-            "Select Language for Analysis:",
-            options=list(language_options.keys()),
-            index=list(language_options.keys()).index(current_lang_display),
-            help="Choose the language for query analysis and predictions (UI remains in English)"
-        )
-        
-        new_language = language_options[selected_language]
-        if new_language != st.session_state.language:
-            st.session_state.language = new_language
-            # Only set language for analysis, not for UI
-            if st.session_state.fanout_engine:
-                st.session_state.fanout_engine.set_language(new_language)
-            st.rerun()
-    
-    st.sidebar.markdown("---")
-    
-    # API Configuration in sidebar
-    st.sidebar.subheader("⚙️ API Configuration")
-    
-    # API Key input
-    api_provider = "OpenAI"  # Fixed to OpenAI only
+    # API Configuration - SINGLE INSTANCE
+    st.sidebar.subheader("🔑 API Configuration")
     
     api_key = st.sidebar.text_input(
         "OpenAI API Key:",
@@ -569,12 +434,11 @@ def main():
         key="openai_api_key_input"
     )
     
-    # Store API configuration in session state and create AI client
+    # Process API key
     if api_key and api_key != st.session_state.get('api_key'):
         st.session_state.api_provider = "OpenAI"
         st.session_state.api_key = api_key
         
-        # Create AI client with current language and user settings
         if ENGINE_AVAILABLE:
             try:
                 st.session_state.ai_client = MultilingualAIClient(
@@ -583,9 +447,8 @@ def main():
                     language=st.session_state.language,
                     settings=st.session_state.user_settings
                 )
-                # Test connection
                 if st.session_state.ai_client.test_connection():
-                    st.sidebar.success("✅ API Key configured!")
+                    st.sidebar.success("✅ OpenAI Connected!")
                 else:
                     st.sidebar.error("❌ API connection failed")
                     st.session_state.ai_client = None
@@ -593,31 +456,27 @@ def main():
                 st.sidebar.error(f"❌ API Error: {str(e)}")
                 st.session_state.ai_client = None
     elif api_key:
-        st.sidebar.success("✅ API Key configured!")
+        st.sidebar.success("✅ OpenAI Connected!")
     else:
         st.sidebar.warning("⚠️ API Key required for AI predictions")
     
     st.sidebar.markdown("---")
     
-    # Settings Link - Single section
+    # Configuration Section - SINGLE INSTANCE
     st.sidebar.subheader("🔧 Configuration")
     
-    # Single Advanced Settings button
     if st.sidebar.button("⚙️ Advanced Settings", use_container_width=True, key="settings_button_main"):
         st.session_state.show_settings = True
         st.rerun()
     
-    # Single Current Settings expander
+    # Current Settings - SINGLE INSTANCE
     if 'user_settings' in st.session_state:
         ai_settings = st.session_state.user_settings.get("ai_settings", {})
-        
-        # Model display mapping
         model_display_names = {
             "gpt-4": "GPT-4",
             "gpt-4o-mini": "GPT-4.1 Mini", 
             "gpt-4o": "GPT-4.1 Nano"
         }
-        
         current_model = ai_settings.get('openai_model', 'gpt-4')
         model_display = model_display_names.get(current_model, current_model)
         
@@ -627,6 +486,10 @@ def main():
             st.write(f"**Model:** {model_display}")
     
     st.sidebar.markdown("---")
+    
+    # ========================================
+    # MAIN CONTENT AREA
+    # ========================================
     
     # Main content area
     st.title("Query Fan-Out Analyzer & Predictor")
@@ -824,180 +687,4 @@ def main():
         
         # Enhanced predictions display with settings awareness
         analysis_settings = st.session_state.user_settings.get("analysis_settings", {})
-        output_settings = st.session_state.user_settings.get("output_settings", {})
-        min_threshold = analysis_settings.get("min_probability_threshold", 0.5)
-        
-        # Filter predictions by threshold
-        filtered_predictions = [
-            pred for pred in st.session_state.predictions 
-            if pred.get('probability', 0) >= min_threshold
-        ]
-        
-        # Sort predictions if enabled
-        if output_settings.get("sort_by_probability", True):
-            filtered_predictions = sorted(filtered_predictions, key=lambda x: x.get('probability', 0), reverse=True)
-        
-        # Group by facet if enabled
-        if output_settings.get("group_by_facet", True):
-            # Group predictions by facet
-            from itertools import groupby
-            grouped_predictions = {}
-            for facet, group in groupby(filtered_predictions, key=lambda x: x.get('facet', 'Other')):
-                grouped_predictions[facet] = list(group)
-            
-            # Display grouped
-            for facet, predictions in grouped_predictions.items():
-                st.subheader(f"📂 {facet}")
-                for i, pred in enumerate(predictions):
-                    with st.container():
-                        col1, col2, col3 = st.columns([3, 1, 1])
-                        
-                        with col1:
-                            st.write(f"**{pred['sub_query']}**")
-                            if analysis_settings.get("include_reasoning", True) and 'reasoning' in pred:
-                                st.caption(f"💡 {pred['reasoning']}")
-                        
-                        with col2:
-                            if output_settings.get("include_confidence_scores", True):
-                                prob = pred['probability']
-                                if prob >= 0.8:
-                                    st.success(f"🟢 {prob:.0%}")
-                                elif prob >= 0.6:
-                                    st.warning(f"🟡 {prob:.0%}")
-                                else:
-                                    st.info(f"🔵 {prob:.0%}")
-                        
-                        with col3:
-                            if 'intent_type' in pred:
-                                st.caption(pred['intent_type'].replace('_', ' ').title())
-                        
-                        st.divider()
-        else:
-            # Display flat list
-            for i, pred in enumerate(filtered_predictions):
-                with st.container():
-                    col1, col2, col3 = st.columns([3, 1, 1])
-                    
-                    with col1:
-                        st.write(f"**{i+1}. {pred['sub_query']}**")
-                        if analysis_settings.get("include_reasoning", True) and 'reasoning' in pred:
-                            st.caption(f"💡 {pred['reasoning']}")
-                    
-                    with col2:
-                        if output_settings.get("include_confidence_scores", True):
-                            prob = pred['probability']
-                            if prob >= 0.8:
-                                st.success(f"🟢 {prob:.0%}")
-                            elif prob >= 0.6:
-                                st.warning(f"🟡 {prob:.0%}")
-                            else:
-                                st.info(f"🔵 {prob:.0%}")
-                    
-                    with col3:
-                        st.write(f"**{pred['facet']}**")
-                        if 'intent_type' in pred:
-                            st.caption(pred['intent_type'].replace('_', ' ').title())
-                    
-                    st.divider()
-        
-        # Summary table for export with applied filters
-        with st.expander("📊 Export Data Table", expanded=False):
-            import pandas as pd
-            
-            # Use filtered predictions for export
-            if 'filtered_predictions' in locals():
-                export_data = filtered_predictions
-            else:
-                export_data = st.session_state.predictions
-            
-            df = pd.DataFrame(export_data)
-            if not df.empty:
-                df['probability'] = df['probability'].apply(lambda x: f"{x:.0%}")
-                
-                st.dataframe(
-                    df,
-                    column_config={
-                        "sub_query": st.column_config.TextColumn("Sub-Query", width="large"),
-                        "probability": st.column_config.TextColumn("Probability", width="small"),
-                        "facet": st.column_config.TextColumn("Facet", width="medium"),
-                        "intent_type": st.column_config.TextColumn("Intent", width="medium"),
-                        "reasoning": st.column_config.TextColumn("Reasoning", width="large")
-                    },
-                    hide_index=True,
-                    use_container_width=True
-                )
-            else:
-                st.info("No predictions meet the current filter criteria.")
-        
-        # Export options with format from settings
-        output_settings = st.session_state.user_settings.get("output_settings", {})
-        export_format = output_settings.get("export_format", "csv")
-        
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            if st.button(f"📄 Export {export_format.upper()}"):
-                if 'filtered_predictions' in locals():
-                    export_data = filtered_predictions
-                else:
-                    export_data = st.session_state.predictions
-                
-                if export_data:
-                    df = pd.DataFrame(export_data)
-                    
-                    if export_format == "csv":
-                        csv_data = df.to_csv(index=False)
-                        st.download_button(
-                            label="Download CSV",
-                            data=csv_data,
-                            file_name=f"fanout_analysis_{st.session_state.current_query.replace(' ', '_')}.csv",
-                            mime="text/csv"
-                        )
-                    elif export_format == "json":
-                        json_data = df.to_json(orient='records', indent=2)
-                        st.download_button(
-                            label="Download JSON",
-                            data=json_data,
-                            file_name=f"fanout_analysis_{st.session_state.current_query.replace(' ', '_')}.json",
-                            mime="application/json"
-                        )
-                    elif export_format == "xlsx":
-                        # Note: xlsx export would require openpyxl
-                        csv_data = df.to_csv(index=False)
-                        st.download_button(
-                            label="Download CSV (XLSX not available)",
-                            data=csv_data,
-                            file_name=f"fanout_analysis_{st.session_state.current_query.replace(' ', '_')}.csv",
-                            mime="text/csv"
-                        )
-                else:
-                    st.warning("No data to export")
-        
-        with col2:
-            if st.button("📊 Generate Report"):
-                st.info("Report generation will be available in the next version!")
-        
-        with col3:
-            if st.button("🔄 New Analysis"):
-                st.session_state.predictions = []
-                st.session_state.current_query = ""
-                st.rerun()
-        
-        # Settings applied indicator
-        if st.session_state.get('settings_saved'):
-            st.success("✅ Custom settings are active!")
-            if st.button("🔧 Modify Settings"):
-                st.session_state.show_settings = True
-                st.rerun()
-    
-    # Footer
-    st.markdown("---")
-    st.markdown("""
-    <div style='text-align: center; color: #666;'>
-        <p>QFAP v1.1 AI-Powered | Built with Streamlit | 
-        <a href='https://github.com/your-username/qfap-analyzer' target='_blank'>GitHub</a>
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-
-if __name__ == "__main__":
-    main()
+        output_settings
