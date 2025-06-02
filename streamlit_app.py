@@ -687,4 +687,144 @@ def main():
         
         # Enhanced predictions display with settings awareness
         analysis_settings = st.session_state.user_settings.get("analysis_settings", {})
-        output_settings
+        output_settings = st.session_state.user_settings.get("output_settings", {})
+        min_threshold = analysis_settings.get("min_probability_threshold", 0.5)
+        
+        # Filter predictions by threshold
+        filtered_predictions = [
+            pred for pred in st.session_state.predictions 
+            if pred.get('probability', 0) >= min_threshold
+        ]
+        
+        # Sort predictions if enabled
+        if output_settings.get("sort_by_probability", True):
+            filtered_predictions = sorted(filtered_predictions, key=lambda x: x.get('probability', 0), reverse=True)
+        
+        # Display predictions
+        for i, pred in enumerate(filtered_predictions):
+            with st.container():
+                col1, col2, col3 = st.columns([3, 1, 1])
+                
+                with col1:
+                    st.write(f"**{i+1}. {pred['sub_query']}**")
+                    if analysis_settings.get("include_reasoning", True) and 'reasoning' in pred:
+                        st.caption(f"💡 {pred['reasoning']}")
+                
+                with col2:
+                    if output_settings.get("include_confidence_scores", True):
+                        prob = pred['probability']
+                        if prob >= 0.8:
+                            st.success(f"🟢 {prob:.0%}")
+                        elif prob >= 0.6:
+                            st.warning(f"🟡 {prob:.0%}")
+                        else:
+                            st.info(f"🔵 {prob:.0%}")
+                
+                with col3:
+                    st.write(f"**{pred['facet']}**")
+                    if 'intent_type' in pred:
+                        st.caption(pred['intent_type'].replace('_', ' ').title())
+                
+                st.divider()
+        
+        # Summary table for export with applied filters
+        with st.expander("📊 Export Data Table", expanded=False):
+            import pandas as pd
+            
+            # Use filtered predictions for export
+            if filtered_predictions:
+                export_data = filtered_predictions
+            else:
+                export_data = st.session_state.predictions
+            
+            df = pd.DataFrame(export_data)
+            if not df.empty:
+                df['probability'] = df['probability'].apply(lambda x: f"{x:.0%}")
+                
+                st.dataframe(
+                    df,
+                    column_config={
+                        "sub_query": st.column_config.TextColumn("Sub-Query", width="large"),
+                        "probability": st.column_config.TextColumn("Probability", width="small"),
+                        "facet": st.column_config.TextColumn("Facet", width="medium"),
+                        "intent_type": st.column_config.TextColumn("Intent", width="medium"),
+                        "reasoning": st.column_config.TextColumn("Reasoning", width="large")
+                    },
+                    hide_index=True,
+                    use_container_width=True
+                )
+            else:
+                st.info("No predictions meet the current filter criteria.")
+        
+        # Export options with format from settings
+        output_settings = st.session_state.user_settings.get("output_settings", {})
+        export_format = output_settings.get("export_format", "csv")
+        
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            if st.button(f"📄 Export {export_format.upper()}"):
+                if filtered_predictions:
+                    export_data = filtered_predictions
+                else:
+                    export_data = st.session_state.predictions
+                
+                if export_data:
+                    df = pd.DataFrame(export_data)
+                    
+                    if export_format == "csv":
+                        csv_data = df.to_csv(index=False)
+                        st.download_button(
+                            label="Download CSV",
+                            data=csv_data,
+                            file_name=f"fanout_analysis_{st.session_state.current_query.replace(' ', '_')}.csv",
+                            mime="text/csv"
+                        )
+                    elif export_format == "json":
+                        json_data = df.to_json(orient='records', indent=2)
+                        st.download_button(
+                            label="Download JSON",
+                            data=json_data,
+                            file_name=f"fanout_analysis_{st.session_state.current_query.replace(' ', '_')}.json",
+                            mime="application/json"
+                        )
+                    elif export_format == "xlsx":
+                        # Note: xlsx export would require openpyxl
+                        csv_data = df.to_csv(index=False)
+                        st.download_button(
+                            label="Download CSV (XLSX not available)",
+                            data=csv_data,
+                            file_name=f"fanout_analysis_{st.session_state.current_query.replace(' ', '_')}.csv",
+                            mime="text/csv"
+                        )
+                else:
+                    st.warning("No data to export")
+        
+        with col2:
+            if st.button("📊 Generate Report"):
+                st.info("Report generation will be available in the next version!")
+        
+        with col3:
+            if st.button("🔄 New Analysis"):
+                st.session_state.predictions = []
+                st.session_state.current_query = ""
+                st.rerun()
+        
+        # Settings applied indicator
+        if st.session_state.get('settings_saved'):
+            st.success("✅ Custom settings are active!")
+            if st.button("🔧 Modify Settings"):
+                st.session_state.show_settings = True
+                st.rerun()
+    
+    # Footer
+    st.markdown("---")
+    st.markdown("""
+    <div style='text-align: center; color: #666;'>
+        <p>QFAP v1.1 AI-Powered | Built with Streamlit | 
+        <a href='https://github.com/your-username/qfap-analyzer' target='_blank'>GitHub</a>
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+if __name__ == "__main__":
+    main()
